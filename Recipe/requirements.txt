@@ -1,0 +1,5 @@
+recipe-scrapers
+pyrebase4
+reportlab
+requests
+beautifulsoup4
