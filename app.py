@@ -1,7 +1,7 @@
 import json
 from flask import Flask, render_template, request, redirect, url_for, flash, send_file
 from recipe_scrapers import scrape_me
-import pyrebase
+import pyrebase4
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import (
     SimpleDocTemplate,
