@@ -433,7 +433,7 @@ def bulk_export_selected():
             story.append(PageBreak())
 
     doc.build(story)
-    return f"📄 Exported {len(selected_ids)} recipes to {pdf_file}"
+    return send_file(pdf_file, as_attachment=True)
 
 
 @app.route("/download_template")
