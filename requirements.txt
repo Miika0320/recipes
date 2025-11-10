@@ -4,12 +4,4 @@ reportlab
 requests
 beautifulsoup4
 flask
-reportlab.lib.pagesizes
-reportlab.platypus
-reportlab.lib
-reportlab.pdfgen
-reportlab.lib.units
-reportlab.lib.styles
-reportlab.platypus
-reportlab.pdfbase
-reportlab.pdfbase.ttfonts
+reportlab
