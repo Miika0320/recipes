@@ -4,4 +4,4 @@ reportlab
 requests
 beautifulsoup4
 flask
-reportlab
+setuptools
