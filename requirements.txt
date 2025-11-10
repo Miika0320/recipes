@@ -3,13 +3,11 @@ pyrebase4
 reportlab
 requests
 beautifulsoup4
-json
 flask
 reportlab.lib.pagesizes
 reportlab.platypus
 reportlab.lib
 reportlab.pdfgen
-io
 reportlab.lib.units
 reportlab.lib.styles
 reportlab.platypus
