@@ -466,5 +466,9 @@ def download_template():
     return send_file(buffer, as_attachment=True, download_name="recipe_card_template.pdf", mimetype="application/pdf")
 
 # ------------------ Run App ------------------
+#if __name__ == "__main__":
+#    app.run(debug=True)
+
 if __name__ == "__main__":
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 10000))  # Render expects port 10000 by default
+    app.run(host="0.0.0.0", port=port, debug=False)
