@@ -5,9 +5,7 @@ requests
 beautifulsoup4
 json
 flask
-recipe_scrapers import scrape_me
-import pyrebase
-reportlab.lib.pagesizes import letter
+reportlab.lib.pagesizes
 reportlab.platypus
 reportlab.lib
 reportlab.pdfgen
