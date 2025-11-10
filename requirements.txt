@@ -1,5 +1,6 @@
 recipe-scrapers
 pyrebase4
+pyrebase
 reportlab
 requests
 beautifulsoup4
