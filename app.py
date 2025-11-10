@@ -17,6 +17,7 @@ from reportlab.platypus import (
 from reportlab.lib import colors
 from reportlab.pdfgen import canvas
 import io
+import os
 from reportlab.lib.units import inch
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.platypus import (
