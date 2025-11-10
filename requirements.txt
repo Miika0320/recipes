@@ -3,3 +3,17 @@ pyrebase4
 reportlab
 requests
 beautifulsoup4
+json
+flask
+recipe_scrapers import scrape_me
+import pyrebase
+reportlab.lib.pagesizes import letter
+reportlab.platypus
+reportlab.lib
+reportlab.pdfgen
+io
+reportlab.lib.units
+reportlab.lib.styles
+reportlab.platypus
+reportlab.pdfbase
+reportlab.pdfbase.ttfonts
