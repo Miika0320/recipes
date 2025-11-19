@@ -12,7 +12,11 @@
 
 <body>
     <div class="side-card">
-        <a href="{{ url_for('login') }}" class="small-btn">Admin Login</a>
+        {% if session.admin_logged_in %}
+            <a href="{{ url_for('logout') }}" class="small-btn">Logout</a>
+        {% else %}
+            <a href="{{ url_for('login') }}" class="small-btn">Admin Login</a>
+        {% endif %}
         <a href="{{ url_for('download_template') }}" class="small-btn">Recipe card template</a>
     </div>
 
