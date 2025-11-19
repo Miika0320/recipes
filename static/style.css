@@ -136,3 +136,107 @@ a {
 .admin-login {
     margin-top: 20px;
 }
+/* PAGE LAYOUT */
+.home-wrapper {
+    max-width: 650px;
+    margin: 40px auto;
+    text-align: center;
+    padding: 0 20px;
+    font-family: "Inter", Arial, sans-serif;
+}
+
+/* TITLE */
+.title {
+    font-size: 42px;
+    margin-bottom: 35px;
+    font-weight: 700;
+    color: #2c3e50;
+}
+
+/* MAIN VIEW CARD */
+.main-card {
+    background: white;
+    padding: 30px;
+    border-radius: 14px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.07);
+    margin-bottom: 30px;
+}
+
+/* SECTION CARDS */
+.section-card {
+    background: white;
+    padding: 28px;
+    border-radius: 14px;
+    margin-top: 20px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.07);
+}
+
+.section-card h2 {
+    font-size: 24px;
+    margin-bottom: 18px;
+    color: #2c3e50;
+}
+
+/* BUTTONS */
+.btn-main {
+    display: inline-block;
+    background: #3498db;
+    color: white;
+    padding: 18px 26px;
+    border-radius: 10px;
+    font-size: 22px;
+    font-weight: 600;
+    text-decoration: none;
+    width: 100%;
+    transition: 0.2s;
+}
+
+.btn-main:hover {
+    background: #2980b9;
+    transform: translateY(-2px);
+}
+
+.btn {
+    display: inline-block;
+    background: #3498db;
+    color: white;
+    padding: 14px 20px;
+    border-radius: 8px;
+    font-size: 18px;
+    text-decoration: none;
+    min-width: 160px;
+    transition: 0.2s;
+}
+
+.btn:hover {
+    background: #2980b9;
+    transform: translateY(-1px);
+}
+
+/* LAYOUT GROUPS */
+.button-row {
+    display: flex;
+    justify-content: center;
+    gap: 18px;
+    flex-wrap: wrap;
+}
+
+.button-column {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
+}
+
+/* ADMIN LINK */
+.admin-link {
+    display: inline-block;
+    margin-top: 25px;
+    color: #7f8c8d;
+    font-size: 16px;
+    text-decoration: none;
+}
+
+.admin-link:hover {
+    text-decoration: underline;
+}

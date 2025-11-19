@@ -7,27 +7,33 @@
 </head>
 <body>
     
-    <div class="index-container">
+    <div class="home-wrapper">
 
-        <!-- MAIN VIEW BUTTON -->
-        <div class="main-action">
-            <a href="/recipes" class="btn-big">View Recipes</a>
+        <h1 class="title">Recipe Manager</h1>
+    
+        <!-- MAIN VIEW RECIPES CARD -->
+        <div class="main-card">
+            <a href="/recipes" class="btn-main">View All Recipes</a>
         </div>
     
-        <!-- ADD RECIPE OPTIONS -->
-        <div class="section-label">Add Recipes</div>
-        <div class="add-buttons">
-            <a href="/add/manual" class="btn">Add Manually</a>
-            <a href="/add/url" class="btn">Add From URL</a>
-            <a href="/add/upload" class="btn">Upload File</a>
+        <!-- ADD RECIPES SECTION -->
+        <div class="section-card">
+            <h2>Add Recipes</h2>
+            <div class="button-row">
+                <a href="/add/manual" class="btn">Add Manually</a>
+                <a href="/add/url" class="btn">Add From URL</a>
+                <a href="/add/upload" class="btn">Upload File</a>
+            </div>
         </div>
     
-        <!-- EXPORT BUTTONS -->
-        <div class="section-label">Export Recipes</div>
-        <div class="export-buttons">
-            <a href="/export/pdf" class="btn">Export as PDF</a>
-            <a href="/export/cards" class="btn">Export as Recipe Cards</a>
-            <a href="/template" class="btn">Download Blank Card Template</a>
+        <!-- EXPORT SECTION -->
+        <div class="section-card">
+            <h2>Export</h2>
+            <div class="button-column">
+                <a href="/export/pdf" class="btn">Export Full PDF</a>
+                <a href="/export/cards" class="btn">Export Recipe Cards</a>
+                <a href="/template" class="btn">Blank Card Template</a>
+            </div>
         </div>
     
         <!-- ADMIN LOGIN -->
@@ -38,9 +44,8 @@
                 <a href="{{ url_for('login') }}" class="btn btn-secondary">Admin Login</a>
             {% endif %}
         </div>
-    
+
     </div>
-    
         
 </body>
 </html>
