@@ -1,0 +1,106 @@
+body {
+    background: #b88686;
+    font-family: 'Poppins', sans-serif;
+    color: white;
+}
+
+.page-wrapper {
+    text-align: center;
+    padding-top: 40px;
+    position: relative;
+}
+
+/* Title */
+.title {
+    font-family: 'Playfair Display', serif;
+    font-size: 48px;
+    margin-bottom: 20px;
+}
+
+/* Main big button */
+.btn-main {
+    display: inline-block;
+    background: #8b0000;
+    color: white;
+    padding: 16px 50px;
+    border-radius: 40px;
+    font-size: 20px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: 0.2s;
+}
+.btn-main:hover {
+    background: #a30000;
+    color: white;
+}
+
+/* Sections */
+.section {
+    margin-top: 40px;
+}
+
+.section-title {
+    font-family: 'Playfair Display', serif;
+    margin-bottom: 20px;
+    font-size: 26px;
+}
+
+.section-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
+}
+
+/* Pill Buttons */
+.btn-pill {
+    background: #640000;
+    padding: 12px 40px;
+    border-radius: 50px;
+    color: white;
+    font-size: 18px;
+    text-decoration: none;
+    transition: 0.2s;
+    width: 260px;
+    text-align: center;
+}
+
+.btn-pill:hover {
+    background: #7a0000;
+    color: white;
+}
+
+/* Export button */
+.export-btn {
+    background: #d64545 !important;
+    color: white;
+    font-weight: 500;
+    width: 260px;
+}
+
+/* LEFT SIDE CARD */
+.side-card {
+    position: absolute;
+    left: 40px;
+    top: 120px;
+    background: rgba(255, 200, 200, 0.35);
+    padding: 25px;
+    border-radius: 10px;
+    text-align: center;
+    width: 180px;
+}
+
+.side-btn {
+    display: block;
+    background: #dd4d4d;
+    padding: 10px 15px;
+    margin-bottom: 15px;
+    border-radius: 30px;
+    font-size: 15px;
+    color: white;
+    text-decoration: none;
+}
+
+.side-btn:hover {
+    background: #e85c5c;
+}
