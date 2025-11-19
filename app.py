@@ -25,6 +25,12 @@ from reportlab.platypus import (
 )
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
+from flask import Flask, render_template, request, redirect, url_for, flash, session
+from functools import wraps
+
+
+ADMIN_USERNAME = "admin"
+ADMIN_PASSWORD = "admin"
 
 # Try registering Baskerville font (you can place baskerville.ttf in your project folder)
 try:
@@ -80,6 +86,16 @@ def export_recipe_pdf(recipe):
     doc.build(story)
     return pdf_file
 
+def admin_required(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        if not session.get("admin_logged_in"):
+            flash("Admin login required.")
+            return redirect(url_for("login"))
+        return f(*args, **kwargs)
+    return wrapper
+
+
 # ------------------ Routes ------------------
 
 @app.route("/")
@@ -92,7 +108,7 @@ def login():
         username = request.form.get("username")
         password = request.form.get("password")
 
-        if username == ADMIN and password == ADMIN:
+        if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
             session["admin_logged_in"] = True
             flash("Logged in successfully.")
             return redirect(url_for("index"))
