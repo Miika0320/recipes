@@ -44,3 +44,38 @@ li {
 a {
     color: #007bff;
 }
+/* Ensure all buttons on the index page look uniform */
+.index-buttons {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px; /* space between buttons */
+    margin-top: 30px;
+}
+
+/* Actual button styling */
+.index-buttons .btn {
+    width: 260px;               /* fixed size so they all match */
+    padding: 14px 20px;
+    text-align: center;
+
+    background-color: #4CAF50;  /* green theme — change if desired */
+    color: white;
+    border: none;
+    border-radius: 8px;
+
+    font-size: 18px;
+    font-family: "Inter", sans-serif;
+    cursor: pointer;
+
+    transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.index-buttons .btn:hover {
+    background-color: #45a049;
+    transform: scale(1.02);
+}
+
+.index-buttons .btn:active {
+    transform: scale(0.98);
+}
