@@ -23,6 +23,12 @@
         <form action="{{ url_for('download_template') }}" method="get" class="d-grid">
             <button type="submit" class="btn btn-primary">Download Recipe Card Template</button>
         </form>
-    </div>        
+    </div>
+    {% if session.admin_logged_in %}
+        <a href="{{ url_for('logout') }}" class="btn btn-secondary">Logout</a>
+    {% else %}
+        <a href="{{ url_for('login') }}" class="btn btn-secondary">Admin Login</a>
+    {% endif %}
+        
 </body>
 </html>

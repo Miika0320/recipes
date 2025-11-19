@@ -40,6 +40,8 @@ styles.add(ParagraphStyle(name="RecipeText", fontName=base_font, fontSize=10, le
 
 
 app = Flask(__name__)
+app.secret_key = "thisisasecret"
+
 
 # Firebase setup
 with open("firebase_config.json") as f:
@@ -83,6 +85,40 @@ def export_recipe_pdf(recipe):
 @app.route("/")
 def index():
     return render_template("index.html")
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        username = request.form.get("username")
+        password = request.form.get("password")
+
+        if username == ADMIN and password == ADMIN:
+            session["admin_logged_in"] = True
+            flash("Logged in successfully.")
+            return redirect(url_for("index"))
+        else:
+            flash("Invalid username or password.")
+            return redirect(url_for("login"))
+
+    return render_template("login.html")
+
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    flash("Logged out.")
+    return redirect(url_for("index"))
+
+
+@app.route("/delete_recipe/<recipe_id>", methods=["POST"])
+@admin_required
+def delete_recipe(recipe_id):
+    try:
+        db.child("recipes").child(recipe_id).remove()
+        flash("Recipe deleted.")
+    except Exception as e:
+        flash(f"Error deleting recipe: {e}")
+    return redirect(url_for("recipes"))
 
 # ------------------ Add Manual ------------------
 @app.route("/add_manual", methods=["GET", "POST"])
