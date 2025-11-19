@@ -104,3 +104,84 @@ body {
 .side-btn:hover {
     background: #e85c5c;
 }
+
+body {
+    background: #b98989;
+    font-family: "Poppins", sans-serif;
+    margin: 0;
+}
+
+.title {
+    text-align: center;
+    margin-top: 40px;
+    font-size: 42px;
+    color: #fff;
+}
+
+.center-section {
+    text-align: center;
+    margin-top: 30px;
+}
+
+.section-header {
+    margin-top: 40px;
+    margin-bottom: 15px;
+    font-size: 22px;
+    color: #fff;
+}
+
+.big-btn {
+    background: #a72828;
+    color: white;
+    padding: 15px 40px;
+    border-radius: 30px;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.mid-btn {
+    background: #6d0e0e;
+    color: white;
+    padding: 10px 25px;
+    border-radius: 25px;
+    margin: 5px;
+    border: none;
+    cursor: pointer;
+}
+
+.row-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+}
+
+.dropdown {
+    padding: 10px 20px;
+    border-radius: 10px;
+    border: none;
+    font-size: 16px;
+    margin-top: 10px;
+}
+
+.side-card {
+    position: absolute;
+    left: 40px;
+    top: 60px;
+    background: #f7c5c5;
+    padding: 25px;
+    border-radius: 10px;
+    width: 180px;
+    text-align: center;
+}
+
+.small-btn {
+    background: #d15252;
+    color: white;
+    padding: 8px 10px;
+    border-radius: 20px;
+    border: none;
+    margin: 10px 0;
+    width: 100%;
+    cursor: pointer;
+}

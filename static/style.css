@@ -1,80 +1,242 @@
 body {
-    background: #b98989;
-    font-family: "Poppins", sans-serif;
-    margin: 0;
+    font-family: Arial, sans-serif;
+    max-width: 700px;
+    margin: 30px auto;
+    background: #fafafa;
+    padding: 20px;
+    border-radius: 12px;
 }
-
-.title {
+h1 {
     text-align: center;
-    margin-top: 40px;
-    font-size: 42px;
-    color: #fff;
+    color: #333;
 }
-
-.center-section {
-    text-align: center;
-    margin-top: 30px;
-}
-
-.section-header {
-    margin-top: 40px;
-    margin-bottom: 15px;
-    font-size: 22px;
-    color: #fff;
-}
-
-.big-btn {
-    background: #a72828;
-    color: white;
-    padding: 15px 40px;
-    border-radius: 30px;
-    border: none;
-    font-size: 20px;
-    cursor: pointer;
-}
-
-.mid-btn {
-    background: #6d0e0e;
-    color: white;
-    padding: 10px 25px;
-    border-radius: 25px;
-    margin: 5px;
-    border: none;
-    cursor: pointer;
-}
-
-.row-buttons {
-    display: flex;
-    justify-content: center;
-    gap: 15px;
-}
-
-.dropdown {
-    padding: 10px 20px;
+form {
+    margin-bottom: 20px;
+    padding: 15px;
+    background: #fff;
     border-radius: 10px;
+    box-shadow: 0 0 5px rgba(0,0,0,0.1);
+}
+input, textarea, button {
+    width: 100%;
+    padding: 10px;
+    margin-top: 8px;
+}
+button {
+    background: #007bff;
+    color: white;
     border: none;
-    font-size: 16px;
+    cursor: pointer;
+}
+button:hover {
+    background: #0056b3;
+}
+ul {
+    list-style-type: none;
+    padding: 0;
+}
+li {
+    background: #fff;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 8px;
+}
+a {
+    color: #007bff;
+}
+
+/* ------- Layout Container ------- */
+.index-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+    padding-top: 40px;
+}
+
+/* ------- Section Labels ------- */
+.section-label {
+    font-size: 22px;
+    font-weight: 600;
     margin-top: 10px;
 }
 
-.side-card {
-    position: absolute;
-    left: 40px;
-    top: 60px;
-    background: #f7c5c5;
-    padding: 25px;
-    border-radius: 10px;
-    width: 180px;
+/* ------- BIG main button ------- */
+.btn-big {
+    display: inline-block;
+    width: 300px;
+    padding: 18px 25px;
+    background-color: #4CAF50;
+    color: white;
     text-align: center;
+    font-size: 24px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: 0.2s;
 }
 
-.small-btn {
-    background: #d15252;
+.btn-big:hover {
+    background-color: #45a049;
+    transform: scale(1.03);
+}
+
+/* ------- Regular Buttons ------- */
+.btn {
+    display: inline-block;
+    width: 200px;
+    padding: 14px 20px;
+    background-color: #4CAF50;
     color: white;
-    padding: 8px 10px;
-    border-radius: 20px;
-    border: none;
-    margin: 10px 0;
+    text-align: center;
+    font-size: 18px;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: 0.2s;
+}
+
+.btn:hover {
+    background-color: #45a049;
+    transform: scale(1.03);
+}
+
+/* ------- Small Button ------- */
+.btn-small {
+    display: inline-block;
+    padding: 10px 16px;
+    background-color: #4CAF50;
+    color: white;
+    font-size: 16px;
+    border-radius: 6px;
+    text-decoration: none;
+    transition: 0.2s;
+}
+
+.btn-small:hover {
+    background-color: #45a049;
+}
+
+/* ------- Add Buttons Row ------- */
+.add-buttons {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    gap: 20px;
+}
+
+/* ------- Export Buttons Column ------- */
+.export-buttons {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+/* ------- Admin Login ------- */
+.admin-login {
+    margin-top: 20px;
+}
+/* PAGE LAYOUT */
+.home-wrapper {
+    max-width: 650px;
+    margin: 40px auto;
+    text-align: center;
+    padding: 0 20px;
+    font-family: "Inter", Arial, sans-serif;
+}
+
+/* TITLE */
+.title {
+    font-size: 42px;
+    margin-bottom: 35px;
+    font-weight: 700;
+    color: #2c3e50;
+}
+
+/* MAIN VIEW CARD */
+.main-card {
+    background: white;
+    padding: 30px;
+    border-radius: 14px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.07);
+    margin-bottom: 30px;
+}
+
+/* SECTION CARDS */
+.section-card {
+    background: white;
+    padding: 28px;
+    border-radius: 14px;
+    margin-top: 20px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.07);
+}
+
+.section-card h2 {
+    font-size: 24px;
+    margin-bottom: 18px;
+    color: #2c3e50;
+}
+
+/* BUTTONS */
+.btn-main {
+    display: inline-block;
+    background: #3498db;
+    color: white;
+    padding: 18px 26px;
+    border-radius: 10px;
+    font-size: 22px;
+    font-weight: 600;
+    text-decoration: none;
     width: 100%;
-    cursor: pointer;
+    transition: 0.2s;
+}
+
+.btn-main:hover {
+    background: #2980b9;
+    transform: translateY(-2px);
+}
+
+.btn {
+    display: inline-block;
+    background: #3498db;
+    color: white;
+    padding: 14px 20px;
+    border-radius: 8px;
+    font-size: 18px;
+    text-decoration: none;
+    min-width: 160px;
+    transition: 0.2s;
+}
+
+.btn:hover {
+    background: #2980b9;
+    transform: translateY(-1px);
+}
+
+/* LAYOUT GROUPS */
+.button-row {
+    display: flex;
+    justify-content: center;
+    gap: 18px;
+    flex-wrap: wrap;
+}
+
+.button-column {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
+}
+
+/* ADMIN LINK */
+.admin-link {
+    display: inline-block;
+    margin-top: 25px;
+    color: #7f8c8d;
+    font-size: 16px;
+    text-decoration: none;
+}
+
+.admin-link:hover {
+    text-decoration: underline;
 }
