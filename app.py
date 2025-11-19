@@ -130,11 +130,22 @@ def logout():
 @admin_required
 def delete_recipe(rid):
     try:
-        db.child("recipes").child(rid).remove()
-        flash("Recipe deleted.")
+        # 1. Check if the recipe key exists (Diagnostic Step)
+        recipe_check = db.child("recipes").child(rid).get()
+        
+        if recipe_check.val() is None:
+            # If the recipe is not found at the given path
+            flash(f"Deletion failed: Recipe ID '{rid}' was not found.", "error")
+            return redirect(url_for("view_recipes")) 
+        
+        # 2. If it exists, proceed with deletion
+        db.child("recipes").child(rid).remove() 
+        flash("Recipe deleted successfully.", "success")
+        
     except Exception as e:
-        flash(f"Error deleting recipe: {e}")
-    return redirect(url_for("recipes"))
+        flash(f"Critical error during deletion: {e}", "error")
+        
+    return redirect(url_for("view_recipes"))
 
 # ------------------ Add Manual ------------------
 @app.route("/add_manual", methods=["GET", "POST"])
