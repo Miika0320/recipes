@@ -130,11 +130,16 @@ def logout():
 @admin_required
 def delete_recipe(recipe_id):
     try:
-        db.child("recipes").child(recipe_id).remove()
-        flash("Recipe deleted.")
+        # Check this line: Is the database object (db) available and configured?
+        db.child("recipes").child(rid).remove() 
+        flash(f"Recipe ID {rid} deleted successfully.", "success")
     except Exception as e:
-        flash(f"Error deleting recipe: {e}")
-    return redirect(url_for("recipes"))
+        # If the database call fails (e.g., authentication, network, or bad ID format)
+        # the server will crash if you don't handle the exception.
+        flash(f"Error deleting recipe: {e}", "error") 
+    
+    # 2. Crash after deletion
+    return redirect(url_for('view_recipes')) # Does this view_recipes route work?
 
 # ------------------ Add Manual ------------------
 @app.route("/add_manual", methods=["GET", "POST"])
