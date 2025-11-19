@@ -1,168 +1,40 @@
+/*
+    General reset and base styling
+*/
 body {
-    font-family: Arial, sans-serif;
-    max-width: 700px;
-    margin: 30px auto;
-    background: #fafafa;
-    padding: 20px;
-    border-radius: 12px;
-}
-h1 {
-    text-align: center;
+    font-family: "Inter", Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background: #ecf0f1; /* Light gray background */
     color: #333;
 }
-form {
-    margin-bottom: 20px;
-    padding: 15px;
-    background: #fff;
-    border-radius: 10px;
-    box-shadow: 0 0 5px rgba(0,0,0,0.1);
-}
-input, textarea, button {
-    width: 100%;
-    padding: 10px;
-    margin-top: 8px;
-}
-button {
-    background: #007bff;
-    color: white;
-    border: none;
-    cursor: pointer;
-}
-button:hover {
-    background: #0056b3;
-}
-ul {
-    list-style-type: none;
-    padding: 0;
-}
-li {
-    background: #fff;
-    padding: 15px;
-    margin-bottom: 10px;
-    border-radius: 8px;
-}
-a {
-    color: #007bff;
-}
 
-/* ------- Layout Container ------- */
-.index-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 30px;
-    padding-top: 40px;
-}
-
-/* ------- Section Labels ------- */
-.section-label {
-    font-size: 22px;
-    font-weight: 600;
-    margin-top: 10px;
-}
-
-/* ------- BIG main button ------- */
-.btn-big {
-    display: inline-block;
-    width: 300px;
-    padding: 18px 25px;
-    background-color: #4CAF50;
-    color: white;
-    text-align: center;
-    font-size: 24px;
-    border-radius: 10px;
-    text-decoration: none;
-    font-weight: 600;
-    transition: 0.2s;
-}
-
-.btn-big:hover {
-    background-color: #45a049;
-    transform: scale(1.03);
-}
-
-/* ------- Regular Buttons ------- */
-.btn {
-    display: inline-block;
-    width: 200px;
-    padding: 14px 20px;
-    background-color: #4CAF50;
-    color: white;
-    text-align: center;
-    font-size: 18px;
-    border-radius: 8px;
-    text-decoration: none;
-    transition: 0.2s;
-}
-
-.btn:hover {
-    background-color: #45a049;
-    transform: scale(1.03);
-}
-
-/* ------- Small Button ------- */
-.btn-small {
-    display: inline-block;
-    padding: 10px 16px;
-    background-color: #4CAF50;
-    color: white;
-    font-size: 16px;
-    border-radius: 6px;
-    text-decoration: none;
-    transition: 0.2s;
-}
-
-.btn-small:hover {
-    background-color: #45a049;
-}
-
-/* ------- Add Buttons Row ------- */
-.add-buttons {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    gap: 20px;
-}
-
-/* ------- Export Buttons Column ------- */
-.export-buttons {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 15px;
-}
-
-/* ------- Admin Login ------- */
-.admin-login {
-    margin-top: 20px;
-}
-/* PAGE LAYOUT */
-.home-wrapper {
+/* --- Global Layout Container for all Pages --- */
+.home-wrapper, .form-wrapper, .recipe-list-wrapper {
     max-width: 650px;
     margin: 40px auto;
-    text-align: center;
     padding: 0 20px;
-    font-family: "Inter", Arial, sans-serif;
 }
 
-/* TITLE */
+/* --- Titles --- */
 .title {
     font-size: 42px;
     margin-bottom: 35px;
     font-weight: 700;
     color: #2c3e50;
+    text-align: center;
 }
 
-/* MAIN VIEW CARD */
+/* --- Card Styles (Main and Section) --- */
 .main-card {
     background: white;
     padding: 30px;
     border-radius: 14px;
     box-shadow: 0 4px 14px rgba(0,0,0,0.07);
     margin-bottom: 30px;
+    text-align: center;
 }
 
-/* SECTION CARDS */
 .section-card {
     background: white;
     padding: 28px;
@@ -175,19 +47,56 @@ a {
     font-size: 24px;
     margin-bottom: 18px;
     color: #2c3e50;
+    text-align: center;
 }
 
-/* BUTTONS */
-.btn-main {
+/* --- Forms & Inputs (Re-used from first style block) --- */
+form {
+    margin-bottom: 20px;
+    padding: 15px;
+    background: #fff;
+    border-radius: 10px;
+}
+input, textarea, select {
+    width: 100%;
+    padding: 12px;
+    margin: 8px 0 15px 0;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    box-sizing: border-box; /* Crucial for padding/width calculation */
+}
+/* Style for default form buttons */
+button[type="submit"] {
     display: inline-block;
     background: #3498db;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    cursor: pointer;
+    border-radius: 8px;
+    font-size: 18px;
+    font-weight: 500;
+    transition: 0.2s;
+}
+button[type="submit"]:hover {
+    background: #2980b9;
+}
+
+
+/* --- Button Classes --- */
+
+/* BIG main button (e.g., View All Recipes) */
+.btn-main {
+    display: inline-block;
+    background: #3498db; /* Blue */
     color: white;
     padding: 18px 26px;
     border-radius: 10px;
     font-size: 22px;
     font-weight: 600;
     text-decoration: none;
-    width: 100%;
+    width: 90%; /* Adjusted for better responsiveness */
+    max-width: 300px;
     transition: 0.2s;
 }
 
@@ -196,9 +105,10 @@ a {
     transform: translateY(-2px);
 }
 
+/* Regular Buttons (e.g., Add Manual, Export) */
 .btn {
     display: inline-block;
-    background: #3498db;
+    background: #3499db; /* Blue */
     color: white;
     padding: 14px 20px;
     border-radius: 8px;
@@ -213,7 +123,24 @@ a {
     transform: translateY(-1px);
 }
 
-/* LAYOUT GROUPS */
+/* Small Button (e.g., Edit, Delete) */
+.btn-small {
+    display: inline-block;
+    padding: 8px 14px;
+    background-color: #7f8c8d; /* Gray color for small utility buttons */
+    color: white;
+    font-size: 14px;
+    border-radius: 6px;
+    text-decoration: none;
+    transition: 0.2s;
+}
+
+.btn-small:hover {
+    background-color: #6b7879;
+}
+
+
+/* --- Layout Groups --- */
 .button-row {
     display: flex;
     justify-content: center;
@@ -228,13 +155,38 @@ a {
     align-items: center;
 }
 
-/* ADMIN LINK */
+/* --- List Styling (For Recipes) --- */
+ul {
+    list-style-type: none;
+    padding: 0;
+}
+li {
+    background: #fff;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+li a {
+    color: #3498db; /* Link color matching button color */
+    font-weight: 500;
+    text-decoration: none;
+}
+li a:hover {
+    text-decoration: underline;
+}
+
+/* --- Admin Link --- */
 .admin-link {
-    display: inline-block;
+    display: block; /* Changed to block for easier centering */
     margin-top: 25px;
     color: #7f8c8d;
     font-size: 16px;
     text-decoration: none;
+    text-align: center;
 }
 
 .admin-link:hover {
