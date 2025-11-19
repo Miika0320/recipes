@@ -1,13 +1,15 @@
-body {
-    background: #b88686;
-    font-family: 'Poppins', sans-serif;
-    color: white;
-}
+/*
+    The body and text colors have been updated to make text readable on a white background.
+    The title now uses text-shadow for a "black outline" effect.
+*/
 
-.page-wrapper {
-    text-align: center;
-    padding-top: 40px;
-    position: relative;
+body {
+    /* Set the main background to white */
+    background: #ffffff;
+    font-family: 'Poppins', sans-serif;
+    /* Change default text color to black for readability on white background */
+    color: #333333;
+    margin: 0;
 }
 
 /* Title */
@@ -15,107 +17,16 @@ body {
     font-family: 'Playfair Display', serif;
     font-size: 48px;
     margin-bottom: 20px;
-}
-
-/* Main big button */
-.btn-main {
-    display: inline-block;
-    background: #8b0000;
-    color: white;
-    padding: 16px 50px;
-    border-radius: 40px;
-    font-size: 20px;
-    text-decoration: none;
-    font-weight: 500;
-    transition: 0.2s;
-}
-.btn-main:hover {
-    background: #a30000;
-    color: white;
-}
-
-/* Sections */
-.section {
-    margin-top: 40px;
-}
-
-.section-title {
-    font-family: 'Playfair Display', serif;
-    margin-bottom: 20px;
-    font-size: 26px;
-}
-
-.section-buttons {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    align-items: center;
-}
-
-/* Pill Buttons */
-.btn-pill {
-    background: #640000;
-    padding: 12px 40px;
-    border-radius: 50px;
-    color: white;
-    font-size: 18px;
-    text-decoration: none;
-    transition: 0.2s;
-    width: 260px;
-    text-align: center;
-}
-
-.btn-pill:hover {
-    background: #7a0000;
-    color: white;
-}
-
-/* Export button */
-.export-btn {
-    background: #d64545 !important;
-    color: white;
-    font-weight: 500;
-    width: 260px;
-}
-
-/* LEFT SIDE CARD */
-.side-card {
-    position: absolute;
-    left: 40px;
-    top: 120px;
-    background: rgba(255, 200, 200, 0.35);
-    padding: 25px;
-    border-radius: 10px;
-    text-align: center;
-    width: 180px;
-}
-
-.side-btn {
-    display: block;
-    background: #dd4d4d;
-    padding: 10px 15px;
-    margin-bottom: 15px;
-    border-radius: 30px;
-    font-size: 15px;
-    color: white;
-    text-decoration: none;
-}
-
-.side-btn:hover {
-    background: #e85c5c;
-}
-
-body {
-    background: #b98989;
-    font-family: "Poppins", sans-serif;
-    margin: 0;
-}
-
-.title {
     text-align: center;
     margin-top: 40px;
     font-size: 42px;
-    color: #fff;
+    color: #a72828; /* Keeping a strong red color for the title */
+    /* Add a black outline effect using text-shadow */
+    text-shadow: 
+        -1px -1px 0 #000,  
+        1px -1px 0 #000,
+        -1px 1px 0 #000,
+        1px 1px 0 #000;
 }
 
 .center-section {
@@ -123,14 +34,19 @@ body {
     margin-top: 30px;
 }
 
+/* Section Header (Use a strong color for readability) */
 .section-header {
     margin-top: 40px;
     margin-bottom: 15px;
     font-size: 22px;
-    color: #fff;
+    color: #6d0e0e; /* Dark red for headers */
+    font-weight: 600;
 }
 
+/* Big Button (View all Recipes) */
 .big-btn {
+    text-decoration: none; /* Ensure link style is removed */
+    display: inline-block;
     background: #a72828;
     color: white;
     padding: 15px 40px;
@@ -138,9 +54,17 @@ body {
     border: none;
     font-size: 20px;
     cursor: pointer;
+    transition: background 0.2s;
+}
+.big-btn:hover {
+    background: #c03939;
+    color: white;
 }
 
+/* Mid Buttons (Add Recipes) */
 .mid-btn {
+    text-decoration: none; /* Ensure link style is removed */
+    display: inline-block;
     background: #6d0e0e;
     color: white;
     padding: 10px 25px;
@@ -148,6 +72,11 @@ body {
     margin: 5px;
     border: none;
     cursor: pointer;
+    transition: background 0.2s;
+}
+.mid-btn:hover {
+    background: #881a1a;
+    color: white;
 }
 
 .row-buttons {
@@ -156,26 +85,35 @@ body {
     gap: 15px;
 }
 
+/* Dropdown (Export) */
 .dropdown {
     padding: 10px 20px;
     border-radius: 10px;
-    border: none;
+    border: 1px solid #ccc; /* Add a border for better visibility on white */
     font-size: 16px;
     margin-top: 10px;
+    color: #333;
+    background-color: #f9f9f9;
 }
 
+/* Side Card Container */
 .side-card {
     position: absolute;
     left: 40px;
     top: 60px;
-    background: #f7c5c5;
+    /* Changed background to a slightly darker, more visible color */
+    background: rgba(210, 210, 210, 0.7); 
     padding: 25px;
     border-radius: 10px;
     width: 180px;
     text-align: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
+/* Small Buttons (Admin Login, Download Template) */
 .small-btn {
+    text-decoration: none; /* Ensure link style is removed */
+    display: block;
     background: #d15252;
     color: white;
     padding: 8px 10px;
@@ -184,4 +122,10 @@ body {
     margin: 10px 0;
     width: 100%;
     cursor: pointer;
+    transition: background 0.2s;
+}
+
+.small-btn:hover {
+    background: #e86e6e;
+    color: white;
 }
