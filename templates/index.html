@@ -12,33 +12,42 @@
 
 <body>
     <div class="side-card">
-        <button class="small-btn">Admin Login</button>
-        <button class="small-btn">Download Recipe card template</button>
+        <a href="{{ url_for('login') }}" class="small-btn">Admin Login</a>
+        <a href="{{ url_for('download_template') }}" class="small-btn">Download Recipe card template</a>
     </div>
 
     <h1 class="title">My Recipe Database</h1>
 
     <div class="center-section">
 
-        <button class="big-btn">View all Recipes</button>
+        <a href="{{ url_for('view_recipes') }}" class="big-btn">View all Recipes</a>
 
         <h2 class="section-header">Add new Recipe</h2>
 
         <div class="row-buttons">
-            <button class="mid-btn">Add Manual Recipe</button>
-            <button class="mid-btn">Add Recipe URL</button>
-            <button class="mid-btn">Add JSON file</button>
+            <a href="{{ url_for('add_manual') }}" class="mid-btn">Add Manual Recipe</a>
+            <a href="{{ url_for('add_url') }}" class="mid-btn">Add Recipe URL</a>
+            <a href="{{ url_for('upload_json') }}" class="mid-btn">Add JSON file</a>
         </div>
 
         <h2 class="section-header">Export all Recipes</h2>
 
-        <select class="dropdown">
-            <option>Export Options</option>
-            <option>Full page export</option>
-            <option>Recipe card export</option>
+        <select class="dropdown" onchange="handleExport(this)">
+            <option value="">Export Options</option>
+            <option value="/bulk_export_all?format=standard">Full page export</option>
+            <option value="/bulk_export_all?format=cards">Recipe card export</option>
         </select>
 
     </div>
-</body>
 
+<script>
+function handleExport(sel) {
+    if (sel.value) {
+        // Since /bulk_export_all handles both formats, we use a simple GET redirect.
+        window.location.href = sel.value;
+    }
+}
+</script>
+
+</body>
 </html>
