@@ -126,9 +126,9 @@ def logout():
     return redirect(url_for("index"))
 
 
-@app.route("/delete_recipe/<recipe_id>", methods=["POST"])
+@app.route("/delete_recipe/<rid>", methods=["POST"])
 @admin_required
-def delete_recipe(recipe_id):
+def delete_recipe(rid):
     try:
         # Check this line: Is the database object (db) available and configured?
         db.child("recipes").child(rid).remove() 
