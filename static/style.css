@@ -44,38 +44,95 @@ li {
 a {
     color: #007bff;
 }
-/* Ensure all buttons on the index page look uniform */
-.index-buttons {
+
+/* ------- Layout Container ------- */
+.index-container {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 15px; /* space between buttons */
-    margin-top: 30px;
+    gap: 30px;
+    padding-top: 40px;
 }
 
-/* Actual button styling */
-.index-buttons .btn {
-    width: 260px;               /* fixed size so they all match */
-    padding: 14px 20px;
-    text-align: center;
+/* ------- Section Labels ------- */
+.section-label {
+    font-size: 22px;
+    font-weight: 600;
+    margin-top: 10px;
+}
 
-    background-color: #4CAF50;  /* green theme — change if desired */
+/* ------- BIG main button ------- */
+.btn-big {
+    display: inline-block;
+    width: 300px;
+    padding: 18px 25px;
+    background-color: #4CAF50;
     color: white;
-    border: none;
-    border-radius: 8px;
-
-    font-size: 18px;
-    font-family: "Inter", sans-serif;
-    cursor: pointer;
-
-    transition: background-color 0.2s ease, transform 0.1s ease;
+    text-align: center;
+    font-size: 24px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: 0.2s;
 }
 
-.index-buttons .btn:hover {
+.btn-big:hover {
     background-color: #45a049;
-    transform: scale(1.02);
+    transform: scale(1.03);
 }
 
-.index-buttons .btn:active {
-    transform: scale(0.98);
+/* ------- Regular Buttons ------- */
+.btn {
+    display: inline-block;
+    width: 200px;
+    padding: 14px 20px;
+    background-color: #4CAF50;
+    color: white;
+    text-align: center;
+    font-size: 18px;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: 0.2s;
+}
+
+.btn:hover {
+    background-color: #45a049;
+    transform: scale(1.03);
+}
+
+/* ------- Small Button ------- */
+.btn-small {
+    display: inline-block;
+    padding: 10px 16px;
+    background-color: #4CAF50;
+    color: white;
+    font-size: 16px;
+    border-radius: 6px;
+    text-decoration: none;
+    transition: 0.2s;
+}
+
+.btn-small:hover {
+    background-color: #45a049;
+}
+
+/* ------- Add Buttons Row ------- */
+.add-buttons {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    gap: 20px;
+}
+
+/* ------- Export Buttons Column ------- */
+.export-buttons {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+/* ------- Admin Login ------- */
+.admin-login {
+    margin-top: 20px;
 }
