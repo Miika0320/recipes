@@ -205,6 +205,10 @@ def upload_json():
 # ------------------ View Recipes ------------------
 @app.route("/recipes")
 def view_recipes():
+    # 1. Get filter/search parameters from the URL
+    search_query = request.args.get("search", "").lower()
+    category_filter = request.args.get("category", "")
+    
     all_recipes_snapshot = db.child("recipes").get()
     recipes = {}
     categories = set()
@@ -218,13 +222,27 @@ def view_recipes():
             recipe_data.setdefault("category", "Uncategorized")
             recipe_data.setdefault("source", "")
             recipe_data["id"] = rid
-            recipes[rid] = recipe_data
+            
+            # Collect all categories for the filter dropdown
             categories.add(recipe_data["category"])
 
-    # Sort recipes by title
+            # 2. Filtering Logic
+            is_match = True
+
+            # Filter by Category
+            if category_filter and category_filter != recipe_data["category"]:
+                is_match = False
+            
+            # Filter by Search Title (case-insensitive)
+            if search_query and search_query not in recipe_data["title"].lower():
+                is_match = False
+
+            if is_match:
+                recipes[rid] = recipe_data
+
+    # Sort recipes by title (only the filtered results)
     sorted_recipes = dict(sorted(recipes.items(), key=lambda x: x[1]["title"].lower()))
     return render_template("recipes.html", recipes=sorted_recipes, categories=sorted(categories))
-
 # ------------------ View Single Recipe ------------------
 @app.route("/view_recipe/<rid>")
 def view_recipe(rid):
