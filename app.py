@@ -172,8 +172,10 @@ def add_manual():
 @app.route("/add_url", methods=["GET", "POST"])
 def add_url():
     if request.method == "POST":
-        urls = [u.strip() for u in request.form.get("urls").split(",")]
+        urls = [u.strip() for u in request.form.get("urls").split(",") if u.strip()]
         category = request.form.get("category")
+        recipes_added = 0
+        
         for url in urls:
             try:
                 scraper = scrape_me(url)
@@ -184,9 +186,18 @@ def add_url():
                     "category": category,
                     "source": url
                 })
+                recipes_added += 1
             except Exception as e:
-                print(f"Error scraping {url}: {e}")
-        return redirect(url_for("view_recipes"))
+                # FIX: Use flash to show the error to the user instead of just printing
+                flash(f"Error scraping recipe from '{url}': {e}", "error")
+        
+        # If any recipes were added, show success and redirect to the recipe list
+        if recipes_added > 0:
+            flash(f"Successfully added {recipes_added} recipe(s)!", "success")
+            return redirect(url_for("view_recipes"))
+        else:
+            # If all attempts failed, redirect back to the add page to see the errors
+            return redirect(url_for("add_url"))
 
     return render_template("add_url.html")
 
