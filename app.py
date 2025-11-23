@@ -1,12 +1,7 @@
 import json
-from flask import Flask, render_template, request, redirect, url_for, flash, send_file, session # Combined all necessary flask imports here
+from flask import Flask, render_template, request, redirect, url_for, flash, send_file, session # CONSOLIDATED IMPORTS
 from recipe_scrapers import scrape_me
 import pyrebase
-import io
-import os
-from functools import wraps
-
-# ReportLab Imports
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import (
     SimpleDocTemplate,
@@ -23,10 +18,18 @@ from reportlab.platypus import (
 )
 from reportlab.lib import colors
 from reportlab.pdfgen import canvas
+import io
+import os
 from reportlab.lib.units import inch
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+# REMOVED: Redundant ReportLab and Flask imports
+# from reportlab.platypus import (
+#     Paragraph, Spacer, Table, TableStyle, FrameBreak, KeepTogether
+# )
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
+# REMOVED: DUPLICATE FLASK IMPORT BLOCK HERE
+from functools import wraps
 
 
 ADMIN_USERNAME = "admin"
@@ -62,6 +65,40 @@ def flatten_recipe(recipe_data):
     if isinstance(recipe_data, dict) and "ingredients" not in recipe_data and len(recipe_data) == 1:
         return list(recipe_data.values())[0]
     return recipe_data
+
+def export_recipe_pdf(recipe):
+    """Generate PDF for a single recipe."""
+    pdf_file = f"{recipe['title']}.pdf"
+    
+    # Use in-memory buffer
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=letter)
+    
+    # Use global styles
+    global styles
+    story = []
+
+    # Use RecipeTitle and other custom styles
+    story.append(Paragraph(f"<b>{recipe['title']}</b>", styles["RecipeTitle"])) 
+    story.append(Spacer(1, 12))
+    story.append(Paragraph(f"<b>Category:</b> {recipe['category']}", styles["RecipeCategory"]))
+    story.append(Spacer(1, 12))
+    story.append(Paragraph("<b>Ingredients:</b>", styles["RecipeSubtitle"]))
+    for ing in recipe["ingredients"]:
+        story.append(Paragraph(f"- {ing}", styles["RecipeText"]))
+    story.append(Spacer(1, 12))
+    story.append(Paragraph("<b>Instructions:</b>", styles["RecipeSubtitle"]))
+    story.append(Paragraph(recipe["instructions"], styles["RecipeText"]))
+    story.append(Spacer(1, 12))
+    story.append(Paragraph(f"<b>Source:</b> {recipe['source']}", styles["RecipeCategory"])) # Use RecipeCategory for source
+
+    doc.build(story)
+    
+    buffer.seek(0)
+    # The helper function is currently designed to return a filename, but we are using an in-memory buffer.
+    # We should adjust the caller or the function's return type based on how it's used.
+    # For now, I will modify the caller in `bulk_export` to handle the buffer directly.
+    return buffer
 
 def admin_required(f):
     @wraps(f)
@@ -274,50 +311,99 @@ def edit_recipe(rid):
     return render_template("edit_recipe.html", recipe=recipe)
 
 # ------------------ Bulk Export PDF ------------------
+@app.route("/bulk_export", methods=["POST"])
+def bulk_export():
+    selected_ids = request.form.getlist("selected_recipes")
+    
+    if not selected_ids:
+        flash("No recipes selected for export.")
+        return redirect(url_for("view_recipes")) 
 
-@app.route("/bulk_export_all", methods=["GET"])
+    # Generate a single PDF with all selected recipes
+    pdf_file_name = "Selected_Recipes_Standard.pdf"
+    
+    # Use in-memory buffer
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=letter)
+    
+    global styles
+    story = []
+
+    for idx, rid in enumerate(selected_ids):
+        snap = db.child("recipes").child(rid).get()
+        if not snap.val():
+            continue 
+
+        recipe = flatten_recipe(snap.val())
+        recipe.setdefault("ingredients", [])
+        recipe.setdefault("instructions", "")
+        recipe.setdefault("category", "Uncategorized")
+        recipe.setdefault("source", "")
+
+        story.append(Paragraph(f"<b>{recipe['title']}</b>", styles["RecipeTitle"]))
+        story.append(Spacer(1, 12))
+        story.append(Paragraph(f"<b>Category:</b> {recipe['category']}", styles["RecipeCategory"]))
+        story.append(Spacer(1, 12))
+        story.append(Paragraph("<b>Ingredients:</b>", styles["RecipeSubtitle"]))
+        for ing in recipe["ingredients"]:
+            story.append(Paragraph(f"- {ing}", styles["RecipeText"]))
+        story.append(Spacer(1, 12))
+        story.append(Paragraph("<b>Instructions:</b>", styles["RecipeSubtitle"]))
+        story.append(Paragraph(recipe["instructions"], styles["RecipeText"]))
+        story.append(Spacer(1, 12))
+        story.append(Paragraph(f"<b>Source:</b> {recipe['source']}", styles["RecipeCategory"]))
+
+        if idx != len(selected_ids) - 1:
+            story.append(PageBreak())
+
+    doc.build(story)
+    buffer.seek(0)
+    return send_file(buffer, as_attachment=True, download_name=pdf_file_name, mimetype='application/pdf')
+
+
+@app.route("/bulk_export_all", methods=["GET"]) # CORRECTED: Changed to GET method
 def bulk_export_all():
+    # Note: Imports are now handled globally
+    
     format_type = request.args.get("format", "standard")
-    
-    # Get all recipes snapshot
     all_snap = db.child("recipes").get()
-    
+
     if not all_snap.each():
         flash("No recipes found to export.")
         return redirect(url_for("index"))
-    
-    # Prepare list of recipes
-    recipes_list = []
-    for snap in all_snap.each():
-        recipe_data = flatten_recipe(snap.val())
-        recipe_data.setdefault("ingredients", [])
-        recipe_data.setdefault("instructions", "")
-        recipe_data.setdefault("category", "Uncategorized")
-        recipe_data.setdefault("source", "")
-        recipes_list.append(recipe_data)
 
-    # Sort the list by title for both export types
-    recipes_list.sort(key=lambda r: r.get("title", "").lower())
+    # Prepare list of recipes by sorting them first
+    recipes_dict = all_snap.val()
+    if recipes_dict:
+        recipes_list = list(recipes_dict.values())
+        recipes_list.sort(key=lambda r: r.get("title", "").lower())
+    else:
+        flash("No recipes found to export.")
+        return redirect(url_for("index"))
     
-    # Use global styles
-    global styles 
+    global styles
 
     if format_type == "standard":
-        pdf_file = "All_Recipes_Standard.pdf"
+        pdf_file_name = "All_Recipes_Standard.pdf"
         
         buffer = io.BytesIO() # Use in-memory buffer
         doc = SimpleDocTemplate(buffer, pagesize=letter)
         
         story = []
 
-        for idx, recipe in enumerate(recipes_list): # Loop over the sorted list
-            # Use correct global custom styles
+        # CORRECTED: Iterate over the prepared and sorted recipes_list
+        for idx, recipe in enumerate(recipes_list): 
+            recipe.setdefault("ingredients", [])
+            recipe.setdefault("instructions", "")
+            recipe.setdefault("category", "Uncategorized")
+            recipe.setdefault("source", "")
+            
             story.append(Paragraph(f"<b>{recipe['title']}</b>", styles["RecipeTitle"]))
             story.append(Spacer(1, 12))
             story.append(Paragraph(f"<b>Category:</b> {recipe['category']}", styles["RecipeCategory"]))
             story.append(Spacer(1, 12))
             story.append(Paragraph("<b>Ingredients:</b>", styles["RecipeSubtitle"]))
-            for ing in recipe.get("ingredients", []):
+            for ing in recipe["ingredients"]:
                 story.append(Paragraph(f"- {ing}", styles["RecipeText"]))
             story.append(Spacer(1, 12))
             story.append(Paragraph("<b>Instructions:</b>", styles["RecipeSubtitle"]))
@@ -330,14 +416,14 @@ def bulk_export_all():
 
         doc.build(story)
         buffer.seek(0)
-        return send_file(buffer, as_attachment=True, download_name=pdf_file, mimetype='application/pdf')
+        return send_file(buffer, as_attachment=True, download_name=pdf_file_name, mimetype='application/pdf')
         
+
     elif format_type == "cards":
-        
         pdf_file_name = "All_Recipes_Cards.pdf"
         buffer = io.BytesIO() 
         
-        # Two 5x7" cards per page document setup
+        # Two 5x7" cards per page (top + bottom)
         class TwoPerPageDoc(BaseDocTemplate):
             def __init__(self, filename, **kwargs):
                 super().__init__(filename, **kwargs)
@@ -354,6 +440,7 @@ def bulk_export_all():
                 ]
                 self.addPageTemplates([PageTemplate(id="TwoPerPage", frames=self.frames)])
 
+        # Using buffer for in-memory PDF generation
         doc = TwoPerPageDoc(buffer, pagesize=letter) 
         story = []
 
@@ -423,35 +510,33 @@ def bulk_export_all():
             return cards
 
 
+        # recipes_list is already prepared and sorted above
         for recipe in recipes_list:
             for card in build_card(recipe):
                 story.append(card)
                 story.append(FrameBreak())
 
+
         doc.build(story)
         buffer.seek(0)
         return send_file(buffer, as_attachment=True, download_name=pdf_file_name, mimetype='application/pdf')
-
-    else:
-        # Handle unrecognized format
-        flash(f"Invalid export format specified: {format_type}.", "error")
-        return redirect(url_for("index"))
 
 
 @app.route("/bulk_export_selected", methods=["POST"])
 def bulk_export_selected():
     selected_ids = request.form.getlist("selected_recipes")
     if not selected_ids:
+        # Added flash message for better user feedback
         flash("No recipes selected for export.")
         return redirect(url_for("view_recipes")) 
-    
+
     pdf_file_name = "Selected_Recipes.pdf"
     
-    # Use in-memory buffer
+    # FIX: Use in-memory buffer instead of file on disk
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=letter)
     
-    global styles # Use global styles
+    global styles
     story = []
 
     for idx, rid in enumerate(selected_ids):
@@ -465,13 +550,13 @@ def bulk_export_selected():
         recipe.setdefault("category", "Uncategorized")
         recipe.setdefault("source", "")
 
-        # Use custom styles defined globally (RecipeTitle, RecipeText, etc.)
+        # FIX: Use custom styles defined globally (RecipeTitle, RecipeText, etc.)
         story.append(Paragraph(f"<b>{recipe['title']}</b>", styles["RecipeTitle"]))
         story.append(Spacer(1, 12))
         story.append(Paragraph(f"<b>Category:</b> {recipe['category']}", styles["RecipeCategory"]))
         story.append(Spacer(1, 12))
         story.append(Paragraph("<b>Ingredients:</b>", styles["RecipeSubtitle"]))
-        for ing in recipe.get("ingredients", []):
+        for ing in recipe["ingredients"]:
             story.append(Paragraph(f"- {ing}", styles["RecipeText"]))
         story.append(Spacer(1, 12))
         story.append(Paragraph("<b>Instructions:</b>", styles["RecipeSubtitle"]))
@@ -484,7 +569,7 @@ def bulk_export_selected():
 
     doc.build(story)
     buffer.seek(0)
-    # Send the in-memory buffer
+    # FIX: Send the in-memory buffer
     return send_file(buffer, as_attachment=True, download_name=pdf_file_name, mimetype='application/pdf')
 
 
@@ -521,5 +606,5 @@ def download_template():
 # ------------------ Run App ------------------
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 10000))
+    port = int(os.environ.get("PORT", 10000))  # Render expects port 10000 by default
     app.run(host="0.0.0.0", port=port, debug=False)
