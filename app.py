@@ -1,5 +1,5 @@
 import json
-from flask import Flask, render_template, request, redirect, url_for, flash, send_file, session
+from flask import Flask, render_template, request, redirect, url_for, flash, send_file, session # Combined all necessary flask imports here
 from recipe_scrapers import scrape_me
 import pyrebase
 import io
@@ -275,7 +275,7 @@ def edit_recipe(rid):
 
 # ------------------ Bulk Export PDF ------------------
 
-@app.route("/bulk_export_all", methods=["GET"]) # FIX: Changed to GET method
+@app.route("/bulk_export_all", methods=["GET"])
 def bulk_export_all():
     format_type = request.args.get("format", "standard")
     
@@ -332,12 +332,12 @@ def bulk_export_all():
         buffer.seek(0)
         return send_file(buffer, as_attachment=True, download_name=pdf_file, mimetype='application/pdf')
         
-    elif format_type == "cards": # Using "card_template" for consistency
+    elif format_type == "cards":
         
         pdf_file_name = "All_Recipes_Cards.pdf"
-        buffer = io.BytesIO() # Use in-memory buffer
+        buffer = io.BytesIO() 
         
-        # Two 5x7" cards per page (top + bottom)
+        # Two 5x7" cards per page document setup
         class TwoPerPageDoc(BaseDocTemplate):
             def __init__(self, filename, **kwargs):
                 super().__init__(filename, **kwargs)
@@ -354,7 +354,7 @@ def bulk_export_all():
                 ]
                 self.addPageTemplates([PageTemplate(id="TwoPerPage", frames=self.frames)])
 
-        doc = TwoPerPageDoc(buffer, pagesize=letter) # Use buffer here
+        doc = TwoPerPageDoc(buffer, pagesize=letter) 
         story = []
 
         def build_card(recipe, max_chars=700):
@@ -442,7 +442,6 @@ def bulk_export_all():
 def bulk_export_selected():
     selected_ids = request.form.getlist("selected_recipes")
     if not selected_ids:
-        # Added flash message for better user feedback
         flash("No recipes selected for export.")
         return redirect(url_for("view_recipes")) 
     
@@ -520,9 +519,7 @@ def download_template():
     return send_file(buffer, as_attachment=True, download_name="recipe_card_template.pdf", mimetype="application/pdf")
 
 # ------------------ Run App ------------------
-#if __name__ == "__main__":
-#    app.run(debug=True)
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 10000))  # Render expects port 10000 by default
+    port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port, debug=False)
