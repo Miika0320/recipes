@@ -14,8 +14,7 @@ from reportlab.platypus import (
     Table,
     TableStyle,
     PageBreak,
-    KeepTogether,
-    Flowable # Added Flowable import
+    KeepTogether
 )
 from reportlab.lib import colors
 from reportlab.pdfgen import canvas
@@ -56,64 +55,6 @@ with open("firebase_config.json") as f:
 firebase = pyrebase.initialize_app(firebase_config)
 db = firebase.database()
 
-# ------------------ Custom PDF Classes for Footer ------------------
-
-# Custom Flowable to set the source attribute on the document
-class SetSourceFlowable(Flowable):
-    """An invisible flowable that updates the document's current recipe source."""
-    def __init__(self, source):
-        self.source = source
-        Flowable.__init__(self)
-
-    def draw(self):
-        # Update the document's state with the source text
-        self.canv.doc.recipe_source = self.source
-        # It's an invisible flowable, so draw nothing.
-
-# Custom Document Template with Footer Logic
-class RecipeDocTemplate(SimpleDocTemplate):
-    """SimpleDocTemplate subclass that adds recipe source and page number footers."""
-    def __init__(self, filename, **kw):
-        super().__init__(filename, **kw)
-        self.recipe_source = "" # Attribute to hold the current recipe source
-
-    def afterPage(self):
-        """Draw a footer on every page."""
-        canvas = self.canv
-        canvas.saveState()
-        
-        # Draw the source (if available)
-        if self.recipe_source:
-            source_text = f"Source: {self.recipe_source}"
-            
-            # Use style properties for font
-            try:
-                font_name = styles["RecipeCategory"].fontName 
-                font_size = styles["RecipeCategory"].fontSize
-            except:
-                font_name = 'Times-Roman'
-                font_size = 10
-            
-            canvas.setFont(font_name, font_size)
-            canvas.setFillColor(colors.grey)
-            
-            # Position the source text at the bottom center of the page (0.5 inch from bottom)
-            y_pos = 0.5 * inch
-            text_width = canvas.stringWidth(source_text)
-            # Center the text: (page width - text width) / 2
-            x_pos = (letter[0] - text_width) / 2
-            
-            canvas.drawString(x_pos, y_pos, source_text)
-
-        # Draw page number on the left (optional, but good practice for footers)
-        page_num_text = f"Page {canvas.getPageNumber()}"
-        canvas.setFont(styles["RecipeText"].fontName, 8)
-        canvas.setFillColor(colors.black)
-        # Position the page number at the bottom left (0.5 inch from bottom and left margin)
-        canvas.drawString(self.leftMargin, 0.5 * inch, page_num_text)
-        
-        canvas.restoreState()
-
 # ------------------ Helpers ------------------
 def flatten_recipe(recipe_data):
     """Flatten nested dicts from Firebase if needed."""
@@ -123,8 +64,6 @@ def flatten_recipe(recipe_data):
 
 def export_recipe_pdf(recipe):
     """Generate PDF for a single recipe."""
-    # NOTE: This helper writes to a file on disk and is not used for bulk download.
-    # We remove the inline source to keep the content consistent with other full-page exports.
     pdf_file = f"{recipe['title']}.pdf"
     doc = SimpleDocTemplate(pdf_file, pagesize=letter)
     styles = getSampleStyleSheet()
@@ -141,7 +80,7 @@ def export_recipe_pdf(recipe):
     story.append(Paragraph("<b>Instructions:</b>", styles["Heading3"]))
     story.append(Paragraph(recipe["instructions"], styles["Normal"]))
     story.append(Spacer(1, 12))
-    # Removed the source paragraph: story.append(Paragraph(f"<b>Source:</b> {recipe['source']}", styles["Italic"]))
+    story.append(Paragraph(f"<b>Source:</b> {recipe['source']}", styles["Italic"]))
 
     doc.build(story)
     return pdf_file
@@ -420,8 +359,7 @@ def bulk_export_all():
         pdf_file = "All_Recipes.pdf"
         
         buffer = io.BytesIO()
-        # Changed to RecipeDocTemplate to enable footer logic
-        doc = RecipeDocTemplate(buffer, pagesize=letter) 
+        doc = SimpleDocTemplate(buffer, pagesize=letter)
         
         story = []
 
@@ -430,9 +368,6 @@ def bulk_export_all():
         
         # Loop through all recipes sorted by title
         for idx, recipe in enumerate(recipes_list):
-            
-            story.append(SetSourceFlowable(recipe['source'])) # Set the source for the footer
-            
             # Use custom styles defined globally
             story.append(Paragraph(f"<b>{recipe['title']}</b>", styles["RecipeTitle"]))
             story.append(Spacer(1, 12))
@@ -445,7 +380,7 @@ def bulk_export_all():
             story.append(Paragraph("<b>Instructions:</b>", styles["RecipeSubtitle"]))
             story.append(Paragraph(recipe["instructions"], styles["RecipeText"]))
             story.append(Spacer(1, 12))
-            # Removed the source paragraph: story.append(Paragraph(f"<b>Source:</b> {recipe['source']}", styles["RecipeCategory"]))
+            story.append(Paragraph(f"<b>Source:</b> {recipe['source']}", styles["RecipeCategory"]))
 
             if idx != len(recipes_list) - 1:
                 story.append(PageBreak())  # separate recipes
@@ -458,8 +393,7 @@ def bulk_export_all():
     elif format_type == "category_sorted":
         pdf_file = "Category_Sorted_Recipes.pdf"
         buffer = io.BytesIO()
-        # Changed to RecipeDocTemplate to enable footer logic
-        doc = RecipeDocTemplate(buffer, pagesize=letter)
+        doc = SimpleDocTemplate(buffer, pagesize=letter)
         story = []
 
         # 1. Group recipes by category
@@ -477,7 +411,6 @@ def bulk_export_all():
         # 3. Build the story
         for cat_idx, category in enumerate(sorted_categories):
             # i. Add subtitle page
-            # NOTE: We do NOT set the source here, as this is a title page
             story.append(Spacer(1, 2 * inch)) # Visually center the title
             story.append(Paragraph(category.upper(), styles["CategoryTitlePage"]))
             story.append(PageBreak()) # Separates the category title page from the first recipe
@@ -486,9 +419,6 @@ def bulk_export_all():
             
             # iii. Iterate and add recipes
             for rec_idx, recipe in enumerate(recipes_in_category):
-                
-                story.append(SetSourceFlowable(recipe['source'])) # Set the source for the footer
-                
                 # Recipe Block - same as standard format
                 story.append(Paragraph(f"<b>{recipe['title']}</b>", styles["RecipeTitle"]))
                 story.append(Spacer(1, 12))
@@ -501,7 +431,7 @@ def bulk_export_all():
                 story.append(Paragraph("<b>Instructions:</b>", styles["RecipeSubtitle"]))
                 story.append(Paragraph(recipe["instructions"], styles["RecipeText"]))
                 story.append(Spacer(1, 12))
-                # Removed the source paragraph: story.append(Paragraph(f"<b>Source:</b> {recipe['source']}", styles["RecipeCategory"]))
+                story.append(Paragraph(f"<b>Source:</b> {recipe['source']}", styles["RecipeCategory"]))
 
                 # iv. Separate recipes
                 # Add PageBreak between all recipes, but not after the very last recipe in the last category
@@ -630,8 +560,7 @@ def bulk_export_selected():
     
     # FIX: Use in-memory buffer instead of file on disk
     buffer = io.BytesIO()
-    # Changed to RecipeDocTemplate to enable footer logic
-    doc = RecipeDocTemplate(buffer, pagesize=letter)
+    doc = SimpleDocTemplate(buffer, pagesize=letter)
     
     # The global `styles` object is now correctly used here
     story = []
@@ -646,8 +575,6 @@ def bulk_export_selected():
         recipe.setdefault("instructions", "")
         recipe.setdefault("category", "Uncategorized")
         recipe.setdefault("source", "")
-        
-        story.append(SetSourceFlowable(recipe['source'])) # Set the source for the footer
 
         # FIX: Use custom styles defined globally (RecipeTitle, RecipeText, etc.)
         story.append(Paragraph(f"<b>{recipe['title']}</b>", styles["RecipeTitle"]))
@@ -661,7 +588,7 @@ def bulk_export_selected():
         story.append(Paragraph("<b>Instructions:</b>", styles["RecipeSubtitle"]))
         story.append(Paragraph(recipe["instructions"], styles["RecipeText"]))
         story.append(Spacer(1, 12))
-        # Removed the source paragraph: story.append(Paragraph(f"<b>Source:</b> {recipe['source']}", styles["RecipeCategory"]))
+        story.append(Paragraph(f"<b>Source:</b> {recipe['source']}", styles["RecipeCategory"]))
 
         if idx != len(selected_ids) - 1:
             story.append(PageBreak())
