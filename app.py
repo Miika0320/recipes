@@ -201,7 +201,7 @@ def add_url():
     return render_template("add_url.html")
 
 # ------------------ Upload JSON ------------------
-@app.route("/upload_json", methods=["GET", "POST"])
+@app.route("/upload_json", methods=["POST"])
 def upload_json():
     if request.method == "POST":
         file = request.files.get("json_file")
