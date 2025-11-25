@@ -1,5 +1,5 @@
 import json
-from flask import Flask, render_template, request, redirect, url_for, flash, send_file, session # CONSOLIDATED IMPORTS
+from flask import Flask, render_template, request, redirect, url_for, flash, send_file, session
 from recipe_scrapers import scrape_me
 import pyrebase
 from reportlab.lib.pagesizes import letter
@@ -14,7 +14,7 @@ from reportlab.platypus import (
     Table,
     TableStyle,
     PageBreak,
-    KeepTogether # Ensure KeepTogether is imported
+    KeepTogether
 )
 from reportlab.lib import colors
 from reportlab.pdfgen import canvas
@@ -22,13 +22,8 @@ import io
 import os
 from reportlab.lib.units import inch
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-# REMOVED: Redundant ReportLab and Flask imports
-# from reportlab.platypus import (
-#     Paragraph, Spacer, Table, TableStyle, FrameBreak, KeepTogether
-# )
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
-# REMOVED: DUPLICATE FLASK IMPORT BLOCK HERE
 from functools import wraps
 
 
@@ -47,6 +42,7 @@ styles.add(ParagraphStyle(name="RecipeTitle", fontName=base_font, fontSize=16, l
 styles.add(ParagraphStyle(name="RecipeCategory", fontName=base_font, fontSize=10, leading=12, textColor=colors.grey))
 styles.add(ParagraphStyle(name="RecipeText", fontName=base_font, fontSize=10, leading=12))
 styles.add(ParagraphStyle(name="RecipeSubtitle", fontName=base_font, fontSize=12, leading=14))
+styles.add(ParagraphStyle(name="CategoryTitlePage", fontName=base_font, fontSize=48, leading=50, alignment=1, spaceAfter=50)) # New Style
 
 app = Flask(__name__)
 app.secret_key = "thisisasecret"
@@ -69,36 +65,25 @@ def flatten_recipe(recipe_data):
 def export_recipe_pdf(recipe):
     """Generate PDF for a single recipe."""
     pdf_file = f"{recipe['title']}.pdf"
-    
-    # Use in-memory buffer
-    buffer = io.BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=letter)
-    
-    # Use global styles
-    global styles
+    doc = SimpleDocTemplate(pdf_file, pagesize=letter)
+    styles = getSampleStyleSheet()
     story = []
 
-    # Use RecipeTitle and other custom styles
-    story.append(Paragraph(f"<b>{recipe['title']}</b>", styles["RecipeTitle"])) 
+    story.append(Paragraph(f"<b>{recipe['title']}</b>", styles["Title"]))
     story.append(Spacer(1, 12))
-    story.append(Paragraph(f"<b>Category:</b> {recipe['category']}", styles["RecipeCategory"]))
+    story.append(Paragraph(f"<b>Category:</b> {recipe['category']}", styles["Normal"]))
     story.append(Spacer(1, 12))
-    story.append(Paragraph("<b>Ingredients:</b>", styles["RecipeSubtitle"]))
+    story.append(Paragraph("<b>Ingredients:</b>", styles["Heading3"]))
     for ing in recipe["ingredients"]:
-        story.append(Paragraph(f"- {ing}", styles["RecipeText"]))
+        story.append(Paragraph(f"- {ing}", styles["Normal"]))
     story.append(Spacer(1, 12))
-    story.append(Paragraph("<b>Instructions:</b>", styles["RecipeSubtitle"]))
-    story.append(Paragraph(recipe["instructions"], styles["RecipeText"]))
+    story.append(Paragraph("<b>Instructions:</b>", styles["Heading3"]))
+    story.append(Paragraph(recipe["instructions"], styles["Normal"]))
     story.append(Spacer(1, 12))
-    story.append(Paragraph(f"<b>Source:</b> {recipe['source']}", styles["RecipeCategory"])) # Use RecipeCategory for source
+    story.append(Paragraph(f"<b>Source:</b> {recipe['source']}", styles["Italic"]))
 
     doc.build(story)
-    
-    buffer.seek(0)
-    # The helper function is currently designed to return a filename, but we are using an in-memory buffer.
-    # We should adjust the caller or the function's return type based on how it's used.
-    # For now, I will modify the caller in `bulk_export` to handle the buffer directly.
-    return buffer
+    return pdf_file
 
 def admin_required(f):
     @wraps(f)
@@ -314,90 +299,76 @@ def edit_recipe(rid):
 @app.route("/bulk_export", methods=["POST"])
 def bulk_export():
     selected_ids = request.form.getlist("selected_recipes")
-    
-    if not selected_ids:
-        flash("No recipes selected for export.")
-        return redirect(url_for("view_recipes")) 
-
-    # Generate a single PDF with all selected recipes
-    pdf_file_name = "Selected_Recipes_Standard.pdf"
-    
-    # Use in-memory buffer
-    buffer = io.BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=letter)
-    
-    global styles
-    story = []
-
-    for idx, rid in enumerate(selected_ids):
+    for rid in selected_ids:
         snap = db.child("recipes").child(rid).get()
-        if not snap.val():
-            continue 
-
         recipe = flatten_recipe(snap.val())
         recipe.setdefault("ingredients", [])
         recipe.setdefault("instructions", "")
         recipe.setdefault("category", "Uncategorized")
         recipe.setdefault("source", "")
+        export_recipe_pdf(recipe)
+    return "PDFs exported successfully!"
 
-        story.append(Paragraph(f"<b>{recipe['title']}</b>", styles["RecipeTitle"]))
-        story.append(Spacer(1, 12))
-        story.append(Paragraph(f"<b>Category:</b> {recipe['category']}", styles["RecipeCategory"]))
-        story.append(Spacer(1, 12))
-        story.append(Paragraph("<b>Ingredients:</b>", styles["RecipeSubtitle"]))
-        for ing in recipe["ingredients"]:
-            story.append(Paragraph(f"- {ing}", styles["RecipeText"]))
-        story.append(Spacer(1, 12))
-        story.append(Paragraph("<b>Instructions:</b>", styles["RecipeSubtitle"]))
-        story.append(Paragraph(recipe["instructions"], styles["RecipeText"]))
-        story.append(Spacer(1, 12))
-        story.append(Paragraph(f"<b>Source:</b> {recipe['source']}", styles["RecipeCategory"]))
-
-        if idx != len(selected_ids) - 1:
-            story.append(PageBreak())
-
-    doc.build(story)
-    buffer.seek(0)
-    return send_file(buffer, as_attachment=True, download_name=pdf_file_name, mimetype='application/pdf')
-
-
-@app.route("/bulk_export_all", methods=["GET"]) # CORRECTED: Changed to GET method
+@app.route("/bulk_export_all", methods=["POST", "GET"])
 def bulk_export_all():
-    # Note: Imports are now handled globally
-    
-    format_type = request.args.get("format", "standard")
-    all_snap = db.child("recipes").get()
+    from reportlab.platypus import KeepTogether, Frame, PageTemplate, BaseDocTemplate, FrameBreak
+    from reportlab.lib.pagesizes import letter
+    from reportlab.lib.units import inch
+    from reportlab.lib import colors
+    from reportlab.platypus import Table, TableStyle, Paragraph, Spacer
+    from reportlab.lib.styles import getSampleStyleSheet
 
-    if not all_snap.each():
+    # Use request.values.get() to check both query params (args) and form data
+    format_type = request.values.get("format", "standard") 
+
+    all_recipes_dict = db.child("recipes").get().val()
+
+    if not all_recipes_dict:
         flash("No recipes found to export.")
         return redirect(url_for("index"))
 
-    # Prepare list of recipes by sorting them first
-    recipes_dict = all_snap.val()
-    if recipes_dict:
-        recipes_list = list(recipes_dict.values())
-        recipes_list.sort(key=lambda r: r.get("title", "").lower())
-    else:
-        flash("No recipes found to export.")
-        return redirect(url_for("index"))
+    # Convert the dictionary of recipes to a list of flattened recipe objects for all export formats
+    recipes_list = []
+    for r_id, r_data in all_recipes_dict.items():
+        recipe = flatten_recipe(r_data)
+        recipe["id"] = r_id
+        recipe.setdefault("ingredients", [])
+        recipe.setdefault("instructions", "")
+        recipe.setdefault("category", "Uncategorized")
+        recipe.setdefault("source", "")
+        recipes_list.append(recipe)
+
+    pdf_file = "all_recipes.pdf"
     
-    global styles
+    # Redefining styles here just in case, but using the globally defined one as well
+    try:
+        pdfmetrics.registerFont(TTFont('Baskerville', 'baskerville.ttf'))
+        base_font = 'Baskerville'
+    except:
+        base_font = 'Times-Roman'  # Fallback if not found
+
+    styles = getSampleStyleSheet()
+    styles.add(ParagraphStyle(name="RecipeTitle", fontName=base_font, fontSize=16, leading=18, alignment=1))
+    styles.add(ParagraphStyle(name="RecipeCategory", fontName=base_font, fontSize=10, leading=12, textColor=colors.grey))
+    styles.add(ParagraphStyle(name="RecipeText", fontName=base_font, fontSize=10, leading=12))
+    styles.add(ParagraphStyle(name="RecipeSubtitle", fontName=base_font, fontSize=12, leading=12))
+    styles.add(ParagraphStyle(name="CategoryTitlePage", fontName=base_font, fontSize=48, leading=50, alignment=1, spaceAfter=50))
+    
 
     if format_type == "standard":
-        pdf_file_name = "All_Recipes_Standard.pdf"
+        pdf_file = "All_Recipes.pdf"
         
-        buffer = io.BytesIO() # Use in-memory buffer
+        buffer = io.BytesIO()
         doc = SimpleDocTemplate(buffer, pagesize=letter)
         
         story = []
 
-        # CORRECTED: Iterate over the prepared and sorted recipes_list
-        for idx, recipe in enumerate(recipes_list): 
-            recipe.setdefault("ingredients", [])
-            recipe.setdefault("instructions", "")
-            recipe.setdefault("category", "Uncategorized")
-            recipe.setdefault("source", "")
-            
+        # Sort all recipes by title for the standard export
+        recipes_list.sort(key=lambda r: r.get("title", "").lower())
+        
+        # Loop through all recipes sorted by title
+        for idx, recipe in enumerate(recipes_list):
+            # Use custom styles defined globally
             story.append(Paragraph(f"<b>{recipe['title']}</b>", styles["RecipeTitle"]))
             story.append(Spacer(1, 12))
             story.append(Paragraph(f"<b>Category:</b> {recipe['category']}", styles["RecipeCategory"]))
@@ -416,13 +387,66 @@ def bulk_export_all():
 
         doc.build(story)
         buffer.seek(0)
-        return send_file(buffer, as_attachment=True, download_name=pdf_file_name, mimetype='application/pdf')
+        return send_file(buffer, as_attachment=True, download_name=pdf_file, mimetype='application/pdf')
+
+    # NEW FORMAT: Category Sorted
+    elif format_type == "category_sorted":
+        pdf_file = "Category_Sorted_Recipes.pdf"
+        buffer = io.BytesIO()
+        doc = SimpleDocTemplate(buffer, pagesize=letter)
+        story = []
+
+        # 1. Group recipes by category
+        grouped_recipes = {}
+        for recipe in recipes_list:
+            category = recipe["category"]
+            grouped_recipes.setdefault(category, []).append(recipe)
         
+        # 2. Sort categories and recipes within each category
+        sorted_categories = sorted(grouped_recipes.keys())
+        
+        for category in sorted_categories:
+            grouped_recipes[category].sort(key=lambda r: r.get("title", "").lower())
+            
+        # 3. Build the story
+        for cat_idx, category in enumerate(sorted_categories):
+            # i. Add subtitle page
+            story.append(Spacer(1, 2 * inch)) # Visually center the title
+            story.append(Paragraph(category.upper(), styles["CategoryTitlePage"]))
+            story.append(PageBreak()) # Separates the category title page from the first recipe
+            
+            recipes_in_category = grouped_recipes[category]
+            
+            # iii. Iterate and add recipes
+            for rec_idx, recipe in enumerate(recipes_in_category):
+                # Recipe Block - same as standard format
+                story.append(Paragraph(f"<b>{recipe['title']}</b>", styles["RecipeTitle"]))
+                story.append(Spacer(1, 12))
+                story.append(Paragraph(f"<b>Category:</b> {recipe['category']}", styles["RecipeCategory"]))
+                story.append(Spacer(1, 12))
+                story.append(Paragraph("<b>Ingredients:</b>", styles["RecipeSubtitle"]))
+                for ing in recipe["ingredients"]:
+                    story.append(Paragraph(f"- {ing}", styles["RecipeText"]))
+                story.append(Spacer(1, 12))
+                story.append(Paragraph("<b>Instructions:</b>", styles["RecipeSubtitle"]))
+                story.append(Paragraph(recipe["instructions"], styles["RecipeText"]))
+                story.append(Spacer(1, 12))
+                story.append(Paragraph(f"<b>Source:</b> {recipe['source']}", styles["RecipeCategory"]))
+
+                # iv. Separate recipes
+                # Add PageBreak between all recipes, but not after the very last recipe in the last category
+                is_last_recipe_in_category = rec_idx == len(recipes_in_category) - 1
+                is_last_category = cat_idx == len(sorted_categories) - 1
+                
+                if not (is_last_recipe_in_category and is_last_category):
+                    story.append(PageBreak())
+
+        doc.build(story)
+        buffer.seek(0)
+        return send_file(buffer, as_attachment=True, download_name=pdf_file, mimetype='application/pdf')
+
 
     elif format_type == "cards":
-        pdf_file_name = "All_Recipes_Cards.pdf"
-        buffer = io.BytesIO() 
-        
         # Two 5x7" cards per page (top + bottom)
         class TwoPerPageDoc(BaseDocTemplate):
             def __init__(self, filename, **kwargs):
@@ -440,8 +464,9 @@ def bulk_export_all():
                 ]
                 self.addPageTemplates([PageTemplate(id="TwoPerPage", frames=self.frames)])
 
-        # Using buffer for in-memory PDF generation
-        doc = TwoPerPageDoc(buffer, pagesize=letter) 
+        pdf_file = "Recipe_Cards.pdf" # Changed filename for clarity
+        buffer = io.BytesIO()
+        doc = TwoPerPageDoc(buffer, pagesize=letter)
         story = []
 
         def build_card(recipe, max_chars=700):
@@ -510,17 +535,18 @@ def bulk_export_all():
             return cards
 
 
-        # recipes_list is already prepared and sorted above
+        recipes_list.sort(key=lambda r: r.get("title", "").lower()) # Sort by title
+
         for recipe in recipes_list:
             for card in build_card(recipe):
                 story.append(card)
                 story.append(FrameBreak())
 
 
+
         doc.build(story)
         buffer.seek(0)
-        return send_file(buffer, as_attachment=True, download_name=pdf_file_name, mimetype='application/pdf')
-
+        return send_file(buffer, as_attachment=True, download_name=pdf_file, mimetype='application/pdf')
 
 @app.route("/bulk_export_selected", methods=["POST"])
 def bulk_export_selected():
@@ -536,7 +562,7 @@ def bulk_export_selected():
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=letter)
     
-    global styles
+    # The global `styles` object is now correctly used here
     story = []
 
     for idx, rid in enumerate(selected_ids):
@@ -604,6 +630,8 @@ def download_template():
     return send_file(buffer, as_attachment=True, download_name="recipe_card_template.pdf", mimetype="application/pdf")
 
 # ------------------ Run App ------------------
+#if __name__ == "__main__":
+#    app.run(debug=True)
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))  # Render expects port 10000 by default
