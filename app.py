@@ -201,14 +201,28 @@ def add_url():
     return render_template("add_url.html")
 
 # ------------------ Upload JSON ------------------
-@app.route("/upload_json", methods=["POST"])
+@app.route("/upload_json", methods=["GET", "POST"])
 def upload_json():
     if request.method == "POST":
         file = request.files.get("json_file")
-        if file:
-            data = json.load(file)
-            for recipe in data:
-                db.child("recipes").push(recipe)
+        recipes_added = 0
+        if file and file.filename:
+            try:
+                data = json.load(file)
+                if isinstance(data, list):
+                    for recipe in data:
+                        db.child("recipes").push(recipe)
+                        recipes_added += 1
+                    flash(f"Successfully uploaded {recipes_added} recipes.", "success")
+                else:
+                    flash("Upload failed: JSON file content is not a list of recipes.", "error")
+            except json.JSONDecodeError:
+                flash("Upload failed: The file is not valid JSON.", "error")
+            except Exception as e:
+                flash(f"Upload failed due to a critical error: {e}", "error")
+        else:
+            flash("No file was selected for upload.", "warning")
+
         return redirect(url_for("view_recipes"))
     return render_template("upload_json.html")
 
@@ -226,33 +240,53 @@ def view_recipes():
     if all_recipes_snapshot.each():
         for snap in all_recipes_snapshot.each():
             rid = snap.key()
-            recipe_data = flatten_recipe(snap.val())
-            recipe_data.setdefault("ingredients", [])
-            recipe_data.setdefault("instructions", "")
-            recipe_data.setdefault("category", "Uncategorized")
-            recipe_data.setdefault("source", "")
-            recipe_data["id"] = rid
+            try: # ADDED try-except block to handle individual corrupted recipes
+                recipe_data = flatten_recipe(snap.val())
+                
+                # Ensure all necessary keys exist before access or sorting
+                recipe_data.setdefault("title", "Untitled Recipe") 
+                recipe_data.setdefault("ingredients", [])
+                recipe_data.setdefault("instructions", "")
+                recipe_data.setdefault("category", "Uncategorized")
+                recipe_data.setdefault("source", "")
+                
+                recipe_data["id"] = rid
+                
+                # Collect all categories for the filter dropdown
+                # This line is now safe because 'category' is guaranteed to exist by setdefault above
+                categories.add(recipe_data["category"])
+
+                # 2. Filtering Logic
+                is_match = True
+
+                # Filter by Category
+                if category_filter and category_filter != recipe_data["category"]:
+                    is_match = False
+                
+                # Filter by Search Title (case-insensitive)
+                # This line is now safe because 'title' is guaranteed to exist
+                if search_query and search_query not in recipe_data["title"].lower():
+                    is_match = False
+
+                if is_match:
+                    recipes[rid] = recipe_data
             
-            # Collect all categories for the filter dropdown
-            categories.add(recipe_data["category"])
-
-            # 2. Filtering Logic
-            is_match = True
-
-            # Filter by Category
-            if category_filter and category_filter != recipe_data["category"]:
-                is_match = False
-            
-            # Filter by Search Title (case-insensitive)
-            if search_query and search_query not in recipe_data["title"].lower():
-                is_match = False
-
-            if is_match:
-                recipes[rid] = recipe_data
+            except Exception as e:
+                # If a single recipe is malformed, log the error and skip it, 
+                # instead of crashing the entire page
+                flash(f"Skipped a corrupted recipe (ID: {rid}) due to error: {e}", "error")
+                continue # Skip to the next recipe
 
     # Sort recipes by title (only the filtered results)
+    # This line is now safe because 'title' is guaranteed to exist for all recipes in the 'recipes' dict
     sorted_recipes = dict(sorted(recipes.items(), key=lambda x: x[1]["title"].lower()))
-    return render_template("recipes.html", recipes=sorted_recipes, categories=sorted(categories))
+    return render_template("recipes.html", 
+                           recipes=sorted_recipes, 
+                           categories=sorted(categories),
+                           search_query=request.args.get("search", ""),
+                           category_filter=category_filter
+                           )
+
 # ------------------ View Single Recipe ------------------
 @app.route("/view_recipe/<rid>")
 def view_recipe(rid):
@@ -261,6 +295,8 @@ def view_recipe(rid):
         return "Recipe not found", 404
 
     recipe = flatten_recipe(snap.val())
+    # Ensure all keys exist
+    recipe.setdefault("title", "Untitled Recipe")
     recipe.setdefault("ingredients", [])
     recipe.setdefault("instructions", "")
     recipe.setdefault("category", "Uncategorized")
@@ -277,6 +313,8 @@ def edit_recipe(rid):
         return "Recipe not found", 404
 
     recipe = flatten_recipe(snap.val())
+    # Ensure all keys exist
+    recipe.setdefault("title", "Untitled Recipe")
     recipe.setdefault("ingredients", [])
     recipe.setdefault("instructions", "")
     recipe.setdefault("category", "Uncategorized")
@@ -302,6 +340,8 @@ def bulk_export():
     for rid in selected_ids:
         snap = db.child("recipes").child(rid).get()
         recipe = flatten_recipe(snap.val())
+        # Ensure all keys exist
+        recipe.setdefault("title", "Untitled Recipe")
         recipe.setdefault("ingredients", [])
         recipe.setdefault("instructions", "")
         recipe.setdefault("category", "Uncategorized")
@@ -332,6 +372,8 @@ def bulk_export_all():
     for r_id, r_data in all_recipes_dict.items():
         recipe = flatten_recipe(r_data)
         recipe["id"] = r_id
+        # Ensure all keys exist
+        recipe.setdefault("title", "Untitled Recipe")
         recipe.setdefault("ingredients", [])
         recipe.setdefault("instructions", "")
         recipe.setdefault("category", "Uncategorized")
@@ -548,6 +590,109 @@ def bulk_export_all():
         buffer.seek(0)
         return send_file(buffer, as_attachment=True, download_name=pdf_file, mimetype='application/pdf')
 
+
+    elif format_type == "cards":
+        # Two 5x7" cards per page (top + bottom)
+        class TwoPerPageDoc(BaseDocTemplate):
+            def __init__(self, filename, **kwargs):
+                super().__init__(filename, **kwargs)
+                # Each card = 7" wide x 5" tall, centered on letter page (8.5 x 11")
+                x_margin = (8.5 * inch - 7 * inch) / 2
+                y_top = 11 * inch - 5 * inch - 0.5 * inch
+                y_bottom = 0.5 * inch
+                card_width = 7 * inch
+                card_height = 5 * inch
+
+                self.frames = [
+                    Frame(x_margin, y_top, card_width, card_height, id="top"),
+                    Frame(x_margin, y_bottom, card_width, card_height, id="bottom")
+                ]
+                self.addPageTemplates([PageTemplate(id="TwoPerPage", frames=self.frames)])
+
+        pdf_file = "Recipe_Cards.pdf" # Changed filename for clarity
+        buffer = io.BytesIO()
+        doc = TwoPerPageDoc(buffer, pagesize=letter)
+        story = []
+
+        def build_card(recipe, max_chars=700):
+            """
+            Build one or more 5x7 cards per recipe with ingredients in two columns.
+            Splits instructions automatically if they exceed max_chars.
+            Ingredients only appear on the first card.
+            Returns a list of Flowables (cards).
+            """
+            title = recipe.get('title', 'Untitled')
+            category = recipe.get('category', 'Uncategorized')
+            ingredients_list = recipe.get('ingredients', [])
+            instructions = recipe.get('instructions', '').replace("\n", "<br/>")
+            source = recipe.get('source', '')
+
+            # Split instructions into manageable chunks
+            chunks = [instructions[i:i+max_chars] for i in range(0, len(instructions), max_chars)]
+            cards = []
+
+            for i, chunk in enumerate(chunks):
+                story = []
+
+                # Title (add continued if not first chunk)
+                story.append(Paragraph(title if i == 0 else f"{title} (continued)", styles["RecipeTitle"]))
+                story.append(Paragraph(category, styles["RecipeCategory"]))
+                story.append(Spacer(1, 6))
+
+                # Only show ingredients on the first card
+                if i == 0 and ingredients_list:
+                    half = (len(ingredients_list) + 1) // 2
+                    col1 = ingredients_list[:half]
+                    col2 = ingredients_list[half:]
+                    
+                    if not col1: col1 = ['']
+                    if not col2: col2 = ['']
+
+                    max_rows = max(len(col1), len(col2))
+                    col1 += [''] * (max_rows - len(col1))
+                    col2 += [''] * (max_rows - len(col2))
+                    table_data = [[Paragraph(f"- {c1}", styles["RecipeText"]),
+                                Paragraph(f"- {c2}", styles["RecipeText"])] for c1, c2 in zip(col1, col2)]
+
+                    table = Table(table_data, colWidths=[3.0*inch, 3.0*inch])
+                    table.setStyle(TableStyle([
+                        ('VALIGN', (0,0), (-1,-1), 'TOP'),
+                        ('LEFTPADDING', (0,0), (-1,-1), 4),
+                        ('RIGHTPADDING', (0,0), (-1,-1), 4),
+                        ('TOPPADDING', (0,0), (-1,-1), 2),
+                        ('BOTTOMPADDING', (0,0), (-1,-1), 2),
+                    ]))
+                    story.append(Paragraph("<b>Ingredients:</b>", styles["RecipeText"]))
+                    story.append(table)
+                    story.append(Spacer(1, 6))
+
+                # Instructions (always included)
+                story.append(Paragraph("<b>Instructions:</b>", styles["RecipeText"]))
+                story.append(Paragraph(chunk, styles["RecipeText"]))
+                story.append(Spacer(1, 6))
+
+                # Source only on last chunk
+                if i == len(chunks) - 1 and source:
+                    story.append(Paragraph(f"<i>Source:</i> {source}", styles["RecipeCategory"]))
+
+                cards.append(KeepTogether(story))
+
+            return cards
+
+
+        recipes_list.sort(key=lambda r: r.get("title", "").lower()) # Sort by title
+
+        for recipe in recipes_list:
+            for card in build_card(recipe):
+                story.append(card)
+                story.append(FrameBreak())
+
+
+
+        doc.build(story)
+        buffer.seek(0)
+        return send_file(buffer, as_attachment=True, download_name=pdf_file, mimetype='application/pdf')
+
 @app.route("/bulk_export_selected", methods=["POST"])
 def bulk_export_selected():
     selected_ids = request.form.getlist("selected_recipes")
@@ -571,6 +716,8 @@ def bulk_export_selected():
             continue # Skip missing recipes
 
         recipe = flatten_recipe(snap.val())
+        # Ensure all keys exist
+        recipe.setdefault("title", "Untitled Recipe")
         recipe.setdefault("ingredients", [])
         recipe.setdefault("instructions", "")
         recipe.setdefault("category", "Uncategorized")
@@ -608,7 +755,7 @@ def download_template():
     c = canvas.Canvas(buffer, pagesize=letter)
     width, height = letter
 
-    # Card size: 7" wide x 5" tall
+    # Card size: 7\" wide x 5\" tall
     card_width = 7 * inch
     card_height = 5 * inch
 
