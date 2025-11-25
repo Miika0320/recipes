@@ -8,7 +8,7 @@
     .badge-main { background-color: #007bff; }
     .badge-side { background-color: #28a745; }
     .badge-dessert { background-color: #ffc107; }
-    .badge-drink { background-color: #17a2b8; }
+    .badge-drink { background-color: #f7209d; }
     .badge-uncategorized { background-color: #6c757d; }
   </style>
 </head>
@@ -98,10 +98,29 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script> 
 <script>
+  // Select All button logic
   const selectAllBtn = document.getElementById('selectAllBtn');
   selectAllBtn.addEventListener('click', () => {
     const checkboxes = document.querySelectorAll('input[name="selected_recipes"]');
     checkboxes.forEach(cb => cb.checked = true);
+  });
+
+  // FIX: Auto-dismissal logic for Flash Messages after 60 seconds (1 minute)
+  document.addEventListener('DOMContentLoaded', function() {
+    // Select all Bootstrap alerts
+    const alerts = document.querySelectorAll('.alert');
+
+    alerts.forEach(alertEl => {
+      // Initialize the Bootstrap Alert object
+      // This is necessary to use the programmatic 'dispose' method
+      const alert = bootstrap.Alert.getOrCreateInstance(alertEl);
+
+      // Set a timeout for 60 seconds (60000 milliseconds)
+      setTimeout(() => {
+        // Dispose (hide and remove) the alert element
+        alert.dispose();
+      }, 60000); // 60 seconds
+    });
   });
 </script>
 </body>
