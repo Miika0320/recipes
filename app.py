@@ -201,28 +201,14 @@ def add_url():
     return render_template("add_url.html")
 
 # ------------------ Upload JSON ------------------
-@app.route("/upload_json", methods=["GET", "POST"])
+@app.route("/upload_json", methods=["POST"])
 def upload_json():
     if request.method == "POST":
         file = request.files.get("json_file")
-        recipes_added = 0
-        if file and file.filename:
-            try:
-                data = json.load(file)
-                if isinstance(data, list):
-                    for recipe in data:
-                        db.child("recipes").push(recipe)
-                        recipes_added += 1
-                    flash(f"Successfully uploaded {recipes_added} recipes.", "success")
-                else:
-                    flash("Upload failed: JSON file content is not a list of recipes.", "error")
-            except json.JSONDecodeError:
-                flash("Upload failed: The file is not valid JSON.", "error")
-            except Exception as e:
-                flash(f"Upload failed due to a critical error: {e}", "error")
-        else:
-            flash("No file was selected for upload.", "warning")
-
+        if file:
+            data = json.load(file)
+            for recipe in data:
+                db.child("recipes").push(recipe)
         return redirect(url_for("view_recipes"))
     return render_template("upload_json.html")
 
