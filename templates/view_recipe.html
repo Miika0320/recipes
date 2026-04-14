@@ -56,9 +56,11 @@
   </div>
 
   <div class="mt-4">
-    <a href="{{ url_for('edit_recipe', rid=recipe.id) }}" class="btn btn-warning">Edit Recipe</a>
     <a href="{{ url_for('view_recipes') }}" class="btn btn-secondary">Back to Recipes</a>
     <a href="{{ url_for('bulk_export') }}" class="btn btn-primary">Export PDF</a>
+    {% if session.admin_logged_in %}
+    <a href="{{ url_for('edit_recipe', rid=recipe.id) }}" class="btn btn-warning">Edit Recipe</a>
+    {% endif %}
   </div>
 </div>
 </body>
