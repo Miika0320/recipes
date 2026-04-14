@@ -25,7 +25,7 @@
     <div class="center-section">
 
         <a href="{{ url_for('view_recipes') }}" class="big-btn">View all Recipes</a>
-
+    {% if session.admin_logged_in %}
         <h2 class="section-header">Add new Recipe</h2>
 
         <div class="row-buttons">
@@ -33,7 +33,7 @@
             <a href="{{ url_for('add_url') }}" class="mid-btn">Add Recipe URL</a>
             <a href="{{ url_for('upload_json') }}" class="mid-btn">Add JSON file</a>
         </div>
-
+    {% endif %}
         <h2 class="section-header">Export all Recipes</h2>
 
         <select class="dropdown" onchange="handleExport(this)">
