@@ -702,6 +702,15 @@ def bulk_export_selected():
         return redirect(url_for("view_recipes")) 
 
     pdf_file_name = "Selected_Recipes.pdf"
+
+    if len(selected_ids) == 1:
+        snap = db.child("recipes").child(selected_ids[0]).get()
+        if snap.val():
+            recipe_data = flatten_recipe(snap.val())
+            title = recipe_data.get("title", "Recipe")
+            # Clean up the title to make it safe for a filename (removes invalid symbols)
+            safe_title = "".join(c for c in title if c.isalnum() or c in (' ', '_', '-')).strip()
+            pdf_file_name = f"{safe_title}.pdf"
     
     # FIX: Use in-memory buffer instead of file on disk
     buffer = io.BytesIO()
