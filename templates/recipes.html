@@ -82,6 +82,9 @@
                 {{ recipe.category }}
               </span>
             </td>
+
+            <td>{{ get_recipe_date(rid, recipe) }}</td>
+
             <td>
               <a href="{{ url_for('view_recipe', rid=rid) }}" class="btn btn-primary btn-sm me-1">View</a>
             {% if session.admin_logged_in %}

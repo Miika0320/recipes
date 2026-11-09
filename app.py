@@ -3,6 +3,7 @@ from flask import Flask, render_template, request, redirect, url_for, flash, sen
 from recipe_scrapers import scrape_me
 import pyrebase
 from reportlab.lib.pagesizes import letter
+from datetime import datetime
 from reportlab.platypus import (
     SimpleDocTemplate,
     Paragraph,
@@ -56,6 +57,36 @@ firebase = pyrebase.initialize_app(firebase_config)
 db = firebase.database()
 
 # ------------------ Helpers ------------------
+PUSH_CHARS = "-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz"
+
+def get_recipe_date(rid, recipe):
+    # 1. Check if the recipe dictionary stores a custom timestamp
+    if isinstance(recipe, dict) and recipe.get('created_at'):
+        try:
+            dt = datetime.fromtimestamp(recipe['created_at'] / 1000.0)
+            return dt.strftime('%Y-%m-%d %H:%M')
+        except Exception:
+            pass
+
+    # 2. Check if it's a standard Firebase Push ID
+    if rid and isinstance(rid, str) and len(rid) == 20 and all(c in PUSH_CHARS for c in rid):
+        try:
+            timestamp = 0
+            for i in range(8):
+                char = rid[i]
+                index = PUSH_CHARS.find(char)
+                timestamp = timestamp * 64 + index
+            dt = datetime.fromtimestamp(timestamp / 1000.0)
+            return dt.strftime('%Y-%m-%d %H:%M')
+        except Exception:
+            pass
+    
+    # 3. Fallback for numerical or custom IDs
+    return "Sometime near the begining (8/25)"
+
+# Register it globally so Jinja templates can see it
+app.jinja_env.globals.update(get_recipe_date=get_recipe_date)
+
 def flatten_recipe(recipe_data):
     """Flatten nested dicts from Firebase if needed."""
     if isinstance(recipe_data, dict) and "ingredients" not in recipe_data and len(recipe_data) == 1:
