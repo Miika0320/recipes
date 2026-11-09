@@ -77,12 +77,12 @@ def get_recipe_date(rid, recipe):
                 index = PUSH_CHARS.find(char)
                 timestamp = timestamp * 64 + index
             dt = datetime.fromtimestamp(timestamp / 1000.0)
-            return dt.strftime('%Y-%m-%d %H:%M')
+            return dt.strftime('%Y-%m-%d')
         except Exception:
             pass
     
     # 3. Fallback for numerical or custom IDs
-    return "Sometime near the begining (8/25)"
+    return "Probably 2025"
 
 # Register it globally so Jinja templates can see it
 app.jinja_env.globals.update(get_recipe_date=get_recipe_date)
